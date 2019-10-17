@@ -7,9 +7,10 @@ import csv
 
 #Location/gen
 class Node:
-    def __init__(self, node_id, state, lat, lon):
+    def __init__(self, node_id, state,city, lat, lon):
         self.id = node_id
         self.state = state
+        self.city = city
         self.lat = float(lat)
         self.lon = float(lon)
 
@@ -46,12 +47,13 @@ class Chromosome:
 
 #generations manager
 class Generations:
-    def __init__(self, fileName, populationSize, numParents, numSwaps,mutationProb):
+    def __init__(self, fileName, populationSize, numParents, numSwaps, mutationProb, mutationSwaps):
         self.populationSize = populationSize
         self.fileName = fileName
         self.numParents = numParents
         self.numSwaps = numSwaps
         self.mutationProb = mutationProb
+        self.mutationSwaps = mutationSwaps
 
     #Read data from csv file and store it 
     def readFile(self):
@@ -61,7 +63,7 @@ class Generations:
             line_count = 0
             for row in csv_reader:
                 if line_count != 0:
-                    node = Node(row[0],row[1],row[3],row[4])
+                    node = Node(row[0],row[1],row[2],row[3],row[4])
                     self.nodes.append(node)
                 line_count += 1
 
@@ -73,7 +75,11 @@ class Generations:
             chromosome.randomShuffle()
             self.populationArray.append(chromosome)
     
-    #Select two Chromosomes for the next generation
+    
+    def takeFirst(self,elem):
+        return elem[0]
+
+    #Select Chromosomes for the next generation
     def selectParents(self):
         totalCosts = 0
         costsList = []
@@ -91,6 +97,23 @@ class Generations:
         # Normalize costs
         costsList = [w / sum_costsList for w in costsList] 
         
+        costPopulation = list(zip(costsList,self.populationArray))
+        costPopulation.sort(key=self.takeFirst)
+        
+        costsList.clear()
+        self.populationArray.clear()
+
+        for i in costPopulation:
+            costsList.append(i[0])
+            self.populationArray.append(i[1])
+
+
+        for i in range(int(self.populationSize/2)):
+            percentage = ((self.populationSize/2)-i)/(self.populationSize/2)
+            percentageChange = costsList[i]*percentage
+            costsList[i] -= percentageChange 
+            costsList[self.populationSize-i-1] += percentageChange 
+
         #Select unique parents
         self.parents = random.choices(self.populationArray, costsList,k=self.numParents)
     
@@ -104,7 +127,7 @@ class Generations:
                 selected = random.randrange(0,len(self.parents[selectedParents[1]].nodes),1)
                 
                 node = self.parents[selectedParents[1]].nodes[selected]
-                
+
                 indexInChromosome = chromosome.getIndex(node)
                 chromosome.nodes.pop(indexInChromosome)
                 chromosome.nodes.insert(selected,node)
@@ -122,15 +145,15 @@ class Generations:
         return best, bestCost
 
     
-    
 
     def mutation(self):
         for i in self.populationArray:
             randNum = random.randrange(0,100,1)
             if randNum < self.mutationProb:
-                while True:
-                    pos1 = random.randrange(0,len(i.nodes),1)
-                    pos2 = random.randrange(0,len(i.nodes),1)
-                    if pos1 != pos2:
-                        i.nodes[pos1], i.nodes[pos2] = i.nodes[pos2], i.nodes[pos1] 
-                        break
+                for swap in range(self.mutationSwaps):
+                    while True:
+                        pos1 = random.randrange(0,len(i.nodes),1)
+                        pos2 = random.randrange(0,len(i.nodes),1)
+                        if pos1 != pos2:
+                            i.nodes[pos1], i.nodes[pos2] = i.nodes[pos2], i.nodes[pos1] 
+                            break
