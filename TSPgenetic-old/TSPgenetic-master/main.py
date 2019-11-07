@@ -1,14 +1,14 @@
 from node import Node, Chromosome, Generations
 from mp import Mp
-from animate import generateAnimation 
+from animate import generateAnimation
 
 fileName = 'CiudadesMX.csv'
 populationSize = 500
-numParents = 50
+numParents = 100
 numSwaps = 16
-mutationProb = 10#0-100
+mutationProb = 5#0-100
 numGenerations = 300
-mutationSwaps = 3
+mutationSwaps = 4
 
 
 
@@ -37,6 +37,3 @@ generateAnimation(evolutionArray, numGenerations-1)
 
 for i in results[0].nodes:
     print(i.city)
-
-
-

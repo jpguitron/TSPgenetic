@@ -23,7 +23,7 @@ class Node:
 #Route
 class Chromosome:
     def __init__(self, nodes):
-        self.nodes = copy.deepcopy(nodes)        
+        self.nodes = copy.deepcopy(nodes)
 
     def randomShuffle(self):
         shuffle(self.nodes)
@@ -32,11 +32,11 @@ class Chromosome:
         totalCost = 0
         for i in range(len(self.nodes)):
             if i+1 < len(self.nodes):
-                totalCost += self.nodes[i].getCost(self.nodes[i+1]) 
+                totalCost += self.nodes[i].getCost(self.nodes[i+1])
             else:
                 totalCost += self.nodes[0].getCost(self.nodes[len(self.nodes)-1])
         return totalCost
-    
+
     def getIndex(self, nodeSearched):
         counter=0
         for node in self.nodes:
@@ -55,7 +55,7 @@ class Generations:
         self.mutationProb = mutationProb
         self.mutationSwaps = mutationSwaps
 
-    #Read data from csv file and store it 
+    #Read data from csv file and store it
     def readFile(self):
         self.nodes = []
         with open(self.fileName, encoding = "ISO-8859-1") as csv_file:
@@ -74,8 +74,8 @@ class Generations:
             chromosome = Chromosome(self.nodes)
             chromosome.randomShuffle()
             self.populationArray.append(chromosome)
-    
-    
+
+
     def takeFirst(self,elem):
         return elem[0]
 
@@ -91,15 +91,15 @@ class Generations:
         for i in range(len(costsList)):
             costsList[i] = costsList[i]/totalCosts
         # Invert costs
-        costsList = [1.0 / c for c in costsList]         
+        costsList = [1.0 / c for c in costsList]
         sum_costsList = sum(costsList)
 
         # Normalize costs
-        costsList = [w / sum_costsList for w in costsList] 
-        
+        costsList = [w / sum_costsList for w in costsList]
+
         costPopulation = list(zip(costsList,self.populationArray))
         costPopulation.sort(key=self.takeFirst)
-        
+
         costsList.clear()
         self.populationArray.clear()
 
@@ -111,12 +111,12 @@ class Generations:
         for i in range(int(self.populationSize/2)):
             percentage = ((self.populationSize/2)-i)/(self.populationSize/2)
             percentageChange = costsList[i]*percentage
-            costsList[i] -= percentageChange 
-            costsList[self.populationSize-i-1] += percentageChange 
+            costsList[i] -= percentageChange
+            costsList[self.populationSize-i-1] += percentageChange
 
         #Select unique parents
         self.parents = random.choices(self.populationArray, costsList,k=self.numParents)
-    
+
     def crossParents(self):
         self.populationArray.clear()
         for pobI in range(self.populationSize):#poblacion
@@ -125,7 +125,7 @@ class Generations:
 
             for i in range(self.numSwaps):
                 selected = random.randrange(0,len(self.parents[selectedParents[1]].nodes),1)
-                
+
                 node = self.parents[selectedParents[1]].nodes[selected]
 
                 indexInChromosome = chromosome.getIndex(node)
@@ -144,7 +144,7 @@ class Generations:
                 bestCost = cCost
         return best, bestCost
 
-    
+
 
     def mutation(self):
         for i in self.populationArray:
@@ -155,5 +155,5 @@ class Generations:
                         pos1 = random.randrange(0,len(i.nodes),1)
                         pos2 = random.randrange(0,len(i.nodes),1)
                         if pos1 != pos2:
-                            i.nodes[pos1], i.nodes[pos2] = i.nodes[pos2], i.nodes[pos1] 
+                            i.nodes[pos1], i.nodes[pos2] = i.nodes[pos2], i.nodes[pos1]
                             break
